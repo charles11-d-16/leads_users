@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Techstacks — Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <script src="js/dashboard.js" defer></script>
+</head>
+<body data-theme="dark">
+
+<aside id="sidebar">
+    <div class="brand">
+        <img src="greenlogo2.png" alt="Logo" class="brand-logo">
+        Techstacks
+    </div>
+    
+    <div class="nav-group">
+        <span class="nav-label">Superadmin</span>
+        <a href="dashboard.html" class="nav-item"><i class="bi bi-grid"></i> Dashboard</a>
+        <a href="register.html" class="nav-item"><i class="bi bi-person-plus"></i> Register</a>
+        <a href="admin-list.html" class="nav-item"><i class="bi bi-people"></i> Admin List</a>
+    </div>
+
+    <div class="nav-group">
+        <span class="nav-label">Leads</span>
+        <a href="inquiry-new.html" class="nav-item"><i class="bi bi-envelope-plus"></i> New Inquiry</a>
+        <a href="inquiry-contacted.html" class="nav-item"><i class="bi bi-telephone-outbound"></i> Contacted</a>
+        <a href="inquiry-progress.html" class="nav-item"><i class="bi bi-arrow-repeat"></i> In Progress</a>
+        <a href="inquiry-cancelled.html" class="nav-item"><i class="bi bi-x-circle"></i> Cancelled</a>
+        <a href="inquiry-completed.html" class="nav-item"><i class="bi bi-check-circle"></i> Completed</a>
+    </div>
+
+    <div class="nav-group">
+        <span class="nav-label">Audit Trail</span>
+        <a href="audit-logins.html" class="nav-item"><i class="bi bi-shield-lock"></i> Logins</a>
+        <a href="audit-history.html" class="nav-item"><i class="bi bi-journal-text"></i> History</a>
+    </div>
+
+    <div class="logout">
+        <a href="index.html" class="nav-item" style="color: #ff5e5e;"><i class="bi bi-power"></i> Logout</a>
+    </div>
+</aside>
+
+<main>
+    <div class="header-actions">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <button class="btn-icon menu-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+            <h2 style="font-weight: 800; font-size: 1.5rem; margin: 0;">&nbsp;<i class="bi bi-grid"></i>&nbsp;&nbsp;&nbsp;Dashboard</h2>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <div class="search-bar">
+                <i class="bi bi-search" style="font-size: 12px;"></i>
+                <input type="text" placeholder="Search...">
+            </div>
+            <button class="btn-icon" onclick="toggleTheme()" title="Toggle Theme" id="themeBtn"><i class="bi bi-moon-stars"></i></button>
+            <button class="btn-icon" title="Filter"><i class="bi bi-funnel"></i></button>
+            <button class="btn-icon" title="Export"><i class="bi bi-box-arrow-up"></i></button>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h4>New Inquiry</h4>
+            <span class="value">10</span>
+            <span class="trend">+33%</span>
+        </div>
+        <div class="stat-card">
+            <h4>Contacted</h4>
+            <span class="value">5</span>
+            <span class="trend">+14%</span>
+        </div>
+        <div class="stat-card">
+            <h4>In Progress</h4>
+            <span class="value">5</span>
+            <span class="trend" style="color:#9fbdb6;">-25%</span>
+        </div>
+        <div class="stat-card">
+            <h4>Completed</h4>
+            <span class="value">20</span>
+            <span class="trend">+10%</span>
+        </div>
+    </div>
+
+    <div class="charts-row">
+        <div class="chart-container">
+            <h4 style="margin: 0 0 10px 0; font-size: 13px;">Inquiries Performance</h4>
+            <div style="height: 220px;"><canvas id="lineChart"></canvas></div>
+        </div>
+        <div class="chart-container" style="align-items: center;">
+            <h4 style="align-self: flex-start; margin: 0 0 10px 0; font-size: 13px;">Inquiry Status</h4>
+            <div style="width: 100%; height: 180px;"><canvas id="doughnutChart"></canvas></div>
+            <div id="chartValue" style="font-weight: 800; font-size: 1.4rem; color: var(--primary);">71.4%</div>
+        </div>
+        <div class="chart-container" style="align-items: center;">
+            <h4 style="align-self: flex-start; margin: 0 0 10px 0; font-size: 13px;">Leads</h4>
+            <div style="width: 100%; height: 210px;"><canvas id="pieChart"></canvas></div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Client_ID</th>
+                    <th>Name</th>
+                    <th>Inquiry_Date</th>
+                    <th>Status</th>
+                    <th>More</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="color: var(--muted); font-family: monospace;">CLNT_01</td>
+                    <td style="font-weight: 500;">Valino, Ray Charles</td>
+                    <td><span style="background: var(--input-bg); padding: 4px 8px; border-radius: 4px;">12/26/2025</span></td>
+                    <td><span class="status-pill status-new">New</span></td>
+                    <td><i class="bi bi-three-dots" style="cursor: pointer;"></i></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

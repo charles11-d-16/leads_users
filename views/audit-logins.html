@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Techstacks — Login Audit</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/audit-logins.css">
+</head>
+<body data-theme="dark">
+
+<aside id="sidebar">
+    <div class="brand">
+        <img src="greenlogo2.png" alt="Logo" class="brand-logo">
+        Techstacks
+    </div>
+    
+    <div class="nav-group">
+        <span class="nav-label">Superadmin</span>
+        <a href="dashboard.html" class="nav-item"><i class="bi bi-grid"></i> Dashboard</a>
+        <a href="register.html" class="nav-item"><i class="bi bi-person-plus"></i> Register</a>
+        <a href="admin-list.html" class="nav-item"><i class="bi bi-people"></i> Admin List</a>
+    </div>
+
+    <div class="nav-group">
+        <span class="nav-label">Leads</span>
+        <a href="inquiry-new.html" class="nav-item"><i class="bi bi-envelope-plus"></i> New Inquiry</a>
+        <a href="inquiry-contacted.html" class="nav-item"><i class="bi bi-telephone-outbound"></i> Contacted</a>
+        <a href="inquiry-progress.html" class="nav-item"><i class="bi bi-arrow-repeat"></i> In Progress</a>
+        <a href="inquiry-cancelled.html" class="nav-item"><i class="bi bi-x-circle"></i> Cancelled</a>
+        <a href="inquiry-completed.html" class="nav-item"><i class="bi bi-check-circle"></i> Completed</a>
+    </div>
+
+    <div class="nav-group">
+        <span class="nav-label">Audit Trail</span>
+        <a href="audit-logins.html" class="nav-item"><i class="bi bi-shield-lock"></i> Logins</a>
+        <a href="audit-history.html" class="nav-item"><i class="bi bi-journal-text"></i> History</a>
+    </div>
+
+    <div class="logout">
+        <a href="index.html" class="nav-item" style="color: #ff5e5e;"><i class="bi bi-power"></i> Logout</a>
+    </div>
+</aside>
+
+<main>
+    <div class="header-actions">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <button class="btn-icon menu-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+            <h2 style="font-weight: 800; font-size: 1.5rem; margin: 0;">&nbsp;<i class="bi bi-shield-lock"></i>&nbsp;&nbsp;&nbsp;Login Audit</h2>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn-icon" onclick="toggleTheme()" title="Toggle Theme" id="themeBtn"><i class="bi bi-moon-stars"></i></button>
+        </div>
+    </div>
+
+    <div class="table-card">
+        <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>IP Address</th>
+                        <th>Status</th>
+                        <th>Device / Browser</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><b style="font-weight: 600;">Admin_Ray</b></td>
+                        <td class="ip-text">112.204.15.82</td>
+                        <td><span class="status-pill status-success"><i class="bi bi-check-circle"></i> Success</span></td>
+                        <td><span class="browser-info">Chrome / Windows 11</span></td>
+                        <td>10 mins ago</td>
+                    </tr>
+                    <tr>
+                        <td><b style="font-weight: 600;">Admin_Sarah</b></td>
+                        <td class="ip-text">124.13.45.101</td>
+                        <td><span class="status-pill status-failed"><i class="bi bi-x-circle"></i> Failed Attempt</span></td>
+                        <td><span class="browser-info">Firefox / MacOS</span></td>
+                        <td>2 hours ago</td>
+                    </tr>
+                    <tr>
+                        <td><b style="font-weight: 600;">Super_Admin</b></td>
+                        <td class="ip-text">192.168.1.1</td>
+                        <td><span class="status-pill status-success"><i class="bi bi-check-circle"></i> Success</span></td>
+                        <td><span class="browser-info">Safari / iPhone</span></td>
+                        <td>Yesterday, 09:15 AM</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+</body>
+</html>

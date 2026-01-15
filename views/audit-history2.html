@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Techstacks — Action History</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/audit-history.css">
+</head>
+<body data-theme="dark">
+
+<aside id="sidebar">
+    <div class="brand">
+        <img src="greenlogo2.png" alt="Logo" class="brand-logo">
+        Techstacks
+    </div>
+    
+    <div class="nav-group">
+        <span class="nav-label">Superadmin</span>
+        <a href="dashboard2.html" class="nav-item"><i class="bi bi-grid"></i> Dashboard</a>
+    </div>
+
+    <div class="nav-group">
+        <span class="nav-label">Leads</span>
+        <a href="inquiry-new2.html" class="nav-item"><i class="bi bi-envelope-plus"></i> New Inquiry</a>
+        <a href="inquiry-contacted2.html" class="nav-item"><i class="bi bi-telephone-outbound"></i> Contacted</a>
+        <a href="inquiry-progress2.html" class="nav-item"><i class="bi bi-arrow-repeat"></i> In Progress</a>
+        <a href="inquiry-cancelled2.html" class="nav-item"><i class="bi bi-x-circle"></i> Cancelled</a>
+        <a href="inquiry-completed2.html" class="nav-item"><i class="bi bi-check-circle"></i> Completed</a>
+    </div>
+
+    <div class="nav-group">
+        <span class="nav-label">Audit Trail</span>
+        <a href="audit-logins2.html" class="nav-item"><i class="bi bi-shield-lock"></i> Logins</a>
+        <a href="audit-history2.html" class="nav-item"><i class="bi bi-journal-text"></i> History</a>
+    </div>
+
+    <div class="logout">
+        <a href="index.html" class="nav-item" style="color: #ff5e5e;"><i class="bi bi-power"></i> Logout</a>
+    </div>
+</aside>
+
+<main>
+    <div class="header-actions">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <button class="btn-icon menu-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+            <h2 style="font-weight: 800; font-size: 1.5rem; margin: 0;">&nbsp;<i class="bi bi-journal-text"></i>&nbsp;&nbsp;&nbsp;Action History</h2>
+        </div>
+        <button class="btn-icon" onclick="toggleTheme()" id="themeBtn"><i class="bi bi-moon-stars"></i></button>
+    </div>
+
+    <div class="history-card">
+        <div class="log-entry">
+            <div class="log-icon icon-edit"><i class="bi bi-pencil-square"></i></div>
+            <div class="log-details">
+                <div class="log-header">
+                    <span class="log-user">Admin_Ray</span>
+                    <span class="log-time">15 mins ago</span>
+                </div>
+                <div class="log-msg">Updated lead status for <b>Alice Smith</b> from <i>Contacted</i> to <b>In Progress</b>.</div>
+            </div>
+        </div>
+
+        <div class="log-entry">
+            <div class="log-icon icon-add"><i class="bi bi-plus-lg"></i></div>
+            <div class="log-details">
+                <div class="log-header">
+                    <span class="log-user">Admin_Sarah</span>
+                    <span class="log-time">2 hours ago</span>
+                </div>
+                <div class="log-msg">Registered a new inquiry for <b>Global Tech Solutions</b> (Service: <i>Web Development</i>).</div>
+            </div>
+        </div>
+
+        <div class="log-entry">
+            <div class="log-icon icon-delete"><i class="bi bi-trash3"></i></div>
+            <div class="log-details">
+                <div class="log-header">
+                    <span class="log-user">Super_Admin</span>
+                    <span class="log-time">Yesterday, 4:30 PM</span>
+                </div>
+                <div class="log-msg">Deleted duplicate inquiry record <b>#REF-9921</b>.</div>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

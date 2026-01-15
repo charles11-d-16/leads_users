@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Techstacks — Cancelled Leads</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/cancelled-list.css">
+    <script src="/js/cancelled-list.js" defer></script>
+</head>
+<body data-theme="dark">
+
+<aside id="sidebar">
+    <div class="brand">
+        <img src="greenlogo2.png" alt="Logo" class="brand-logo">
+        Techstacks
+    </div>
+    
+    <div class="nav-group">
+        <span class="nav-label">Superadmin</span>
+        <a href="dashboard2.html" class="nav-item"><i class="bi bi-grid"></i> Dashboard</a>
+    </div>
+
+    <div class="nav-group">
+        <span class="nav-label">Leads</span>
+        <a href="inquiry-new2.html" class="nav-item"><i class="bi bi-envelope-plus"></i> New Inquiry</a>
+        <a href="inquiry-contacted2.html" class="nav-item"><i class="bi bi-telephone-outbound"></i> Contacted</a>
+        <a href="inquiry-progress2.html" class="nav-item"><i class="bi bi-arrow-repeat"></i> In Progress</a>
+        <a href="inquiry-cancelled2.html" class="nav-item"><i class="bi bi-x-circle"></i> Cancelled</a>
+        <a href="inquiry-completed2.html" class="nav-item"><i class="bi bi-check-circle"></i> Completed</a>
+    </div>
+
+    <div class="nav-group">
+        <span class="nav-label">Audit Trail</span>
+        <a href="audit-logins2.html" class="nav-item"><i class="bi bi-shield-lock"></i> Logins</a>
+        <a href="audit-history2.html" class="nav-item"><i class="bi bi-journal-text"></i> History</a>
+    </div>
+
+    <div class="logout">
+        <a href="index.html" class="nav-item" style="color: #ff5e5e;"><i class="bi bi-power"></i> Logout</a>
+    </div>
+</aside>
+
+<main>
+    <div class="header-actions">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <button class="btn-icon menu-toggle" onclick="toggleSidebar()"><i class="bi bi-list"></i></button>
+            <h2 style="font-weight: 800; font-size: 1.5rem; margin: 0;">&nbsp;<i class="bi bi-x-circle"></i>&nbsp;&nbsp;&nbsp;Cancelled Leads</h2>
+        </div>
+        <button class="btn-icon" onclick="toggleTheme()" id="themeBtn"><i class="bi bi-moon-stars"></i></button>
+    </div>
+
+    <div class="filter-bar">
+        <div class="search-wrapper">
+            <i class="bi bi-search"></i>
+            <input type="text" class="filter-input" id="searchInput" placeholder="Search by ID, name, or keywords..." onkeyup="applyFilters()">
+        </div>
+        <button class="btn-icon" onclick="sortLeads('name')" title="Sort A-Z"><i id="sortIcon" class="bi bi-sort-alpha-down"></i></button>
+    </div>
+
+    <div class="content-area">
+        <div class="table-card">
+            <div class="table-scroll">
+                <table id="leadsTable">
+                    <thead>
+                        <tr>
+                            <th>Ref. ID</th>
+                            <th>Client</th>
+                            <th>
+                                <select class="column-filter" id="typeFilter" onchange="applyFilters()">
+                                    <option value="All">Concern / Inquiry</option>
+                                    <option value="proposal">Project Proposal</option>
+                                    <option value="maintenance">Maintenance Support</option>
+                                    <option value="security">Security Consultation</option>
+                                    <option value="general">General Inquiry</option>
+                                </select>
+                            </th>
+                            <th>Status</th>
+                            <th>
+                                <span onclick="sortLeads('date')" style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                    Last Contact <i id="dateSortIcon" class="bi bi-arrow-down-up" style="font-size: 10px;"></i>
+                                </span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="leadsBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="details-sidebar" id="detailsBox">
+            <div class="details-scroll-area">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <i class="bi bi-info-circle" style="font-size: 2rem; color: var(--primary);"></i>
+                    <h4 style="margin: 10px 0 0 0;">Lead Details</h4>
+                </div>
+                <div class="detail-block"><label>Reference ID</label><p id="det-ref" style="font-family: monospace; color: var(--primary); font-weight: 700;">-</p></div>
+                <div class="detail-block"><label>Full Name</label><p id="det-name">Select a lead</p></div>
+                <div class="detail-block"><label>Assigned Staff</label><p id="det-staff">-</p></div>
+                <div class="detail-block"><label>Concern / Inquiry</label><p id="det-type">-</p></div>
+                <div class="detail-block"><label>Last Contact</label><p id="det-date">-</p></div>
+                <div class="detail-block"><label>Internal Notes</label><p id="det-message" style="color: var(--muted);">Click on a row to view staff notes.</p></div>
+            </div>
+            <button class="btn-action" id="updateStatusBtn" onclick="openStatusModal()">Update Status</button>
+        </div>
+    </div>
+</main>
+<div id="messageModal" class="modal">
+  <div class="modal-content">
+    <span class="close" id="closeMessageModal">&times;</span>
+    <p id="messageText"></p>
+    <button id="okMessageButton" class="btn-ok">OK</button>
+  </div>
+</div>
+<div id="statusModal" class="modal">
+  <div class="modal-content">
+    <span class="close" id="closeModal">&times;</span>
+    <h2>Update Status</h2>
+    <form id="statusForm">
+      <label for="statusSelect">Status</label>
+      <select id="statusSelect" name="status" required>
+        <option value="New">New</option>
+        <option value="Contacted">Contacted</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Completed-Successful">Completed-Successful</option>
+        <option value="Completed-Unsuccessful">Completed-Unsuccessful</option>
+      </select>
+      <label for="notesInput">Notes</label>
+      <textarea id="notesInput" name="notes" rows="4" required></textarea>
+      <button type="submit" class="btn-action">Save</button>
+    </form>
+  </div>
+</div>
+
+
+</body>
+</html>

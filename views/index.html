@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Techstacks — Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/index.css">
+    <script src="js/index.js" defer></script>
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle" title="Toggle Theme">
+        <i class="bi bi-moon-fill"></i>
+    </button>
+
+    <div class="login-container">
+        <div class="login-box">
+            <div class="brand">
+                <img src="greenlogo2.png" alt="Logo" class="brand-logo">
+                Techstacks
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        placeholder="you@example.com" 
+                        required
+                    >
+                    <div class="error-message" id="emailError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        placeholder="*************" 
+                        required
+                    >
+                    <div class="error-message" id="passwordError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="role">Role</label>
+                    <select id="role" name="role" required>
+                        <option value="Superadmin">Superadmin</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                    <div class="error-message" id="roleError"></div>
+                </div>
+
+                <div class="captcha-section">
+                    <!-- First row: num1 + num2 = -->
+                    <div class="captcha-equation">
+                        <input 
+                            type="number" 
+                            id="captchaNum1" 
+                            class="captcha-num-input" 
+                            readonly
+                            value="7"
+                        >
+                        <span class="captcha-operator" id="operator">+</span>
+                        <input 
+                            type="number" 
+                            id="captchaNum2" 
+                            class="captcha-num-input" 
+                            readonly
+                            value="3"
+                        >
+                        <span class="captcha-equals">=</span>
+                    </div>
+
+                    <!-- Second row: answer input with refresh button -->
+                    <div class="captcha-answer-row">
+                        <input 
+                            type="number" 
+                            id="captchaAnswer" 
+                            class="captcha-answer-input" 
+                            placeholder="0" 
+                            max="99"
+                            min="0"
+                            required
+                        >
+                        <button 
+                            type="button" 
+                            class="captcha-refresh" 
+                            id="refreshCaptcha" 
+                            title="Refresh captcha"
+                        >
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </div>
+
+                    <div class="error-message" id="captchaError" style="position: absolute; margin-top: 60px; width: 100%;"></div>
+                </div>
+
+                <button type="submit" class="login-btn">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+</body>
+</html>
