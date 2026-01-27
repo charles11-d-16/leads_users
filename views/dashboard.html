@@ -54,14 +54,14 @@
         <div style="display: flex; gap: 8px;">
             <div class="search-bar">
                 <i class="bi bi-search" style="font-size: 12px;"></i>
-                <input type="text" placeholder="Search...">
+                <input type="text" id="searchInput" placeholder="Search by name, email...">
             </div>
             <button class="btn-icon" onclick="toggleTheme()" title="Toggle Theme" id="themeBtn"><i class="bi bi-moon-stars"></i></button>
-            <button class="btn-icon" title="Filter"><i class="bi bi-funnel"></i></button>
+            <button class="btn-icon" onclick="openDateFilter()" title="Filter"><i class="bi bi-funnel"></i></button>
             <button class="btn-icon" title="Export"><i class="bi bi-box-arrow-up"></i></button>
         </div>
     </div>
-
+<div class="scrollable">
     <div class="stats-grid">
         <div class="stat-card">
             <h4>New Inquiry</h4>
@@ -77,6 +77,11 @@
             <h4>In Progress</h4>
             <span class="value">5</span>
             <span class="trend" style="color:#9fbdb6;">-25%</span>
+        </div>
+        <div class="stat-card">
+            <h4>Cancelled</h4>
+            <span class="value">2</span>
+            <span class="trend" style="color:#ef4444;">-5%</span>
         </div>
         <div class="stat-card">
             <h4>Completed</h4>
@@ -107,6 +112,7 @@
                 <tr>
                     <th>Client_ID</th>
                     <th>Name</th>
+                    <th>Email</th>
                     <th>Inquiry_Date</th>
                     <th>Status</th>
                     <th>More</th>
@@ -115,13 +121,77 @@
             <tbody>
                 <tr>
                     <td style="color: var(--muted); font-family: monospace;">CLNT_01</td>
-                    <td style="font-weight: 500;">Valino, Ray Charles</td>
-                    <td><span style="background: var(--input-bg); padding: 4px 8px; border-radius: 4px;">12/26/2025</span></td>
+                    <td style="font-weight: 500;">Loading...</td>
+                    <td>-</td>
+                    <td><span style="background: var(--input-bg); padding: 4px 8px; border-radius: 4px;">-</span></td>
                     <td><span class="status-pill status-new">New</span></td>
                     <td><i class="bi bi-three-dots" style="cursor: pointer;"></i></td>
                 </tr>
             </tbody>
         </table>
+    </div>
+
+    <!-- Date Filter Modal -->
+    <div id="dateFilterModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Date Range Filter</h3>
+                <button class="modal-close" onclick="closeDateFilter()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; gap: 20px;">
+                    <div style="flex: 1;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500; font-size: 13px;">Start Date</label>
+                        <div id="startDatePicker" class="date-picker"></div>
+                        <input type="hidden" id="startDateInput">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500; font-size: 13px;">End Date</label>
+                        <div id="endDatePicker" class="date-picker"></div>
+                        <input type="hidden" id="endDateInput">
+                    </div>
+                </div>
+                <div style="margin-top: 20px; display: flex; gap: 30px; align-items: flex-start;">
+                    <div style="flex: 1;">
+
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px 25px;">
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
+                                <input type="checkbox" id="statusAll" checked onchange="handleStatusAllChange()" class="status-checkbox">
+                                All
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
+                                <input type="checkbox" id="statusNew" checked onchange="handleStatusChange()" class="status-checkbox">
+                                New
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
+                                <input type="checkbox" id="statusContacted" checked onchange="handleStatusChange()" class="status-checkbox">
+                                Contacted
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
+                                <input type="checkbox" id="statusInProgress" checked onchange="handleStatusChange()" class="status-checkbox">
+                                In Progress
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
+                                <input type="checkbox" id="statusCancelled" checked onchange="handleStatusChange()" class="status-checkbox">
+                                Cancelled
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
+                                <input type="checkbox" id="statusCompleted" checked onchange="handleStatusChange()" class="status-checkbox">
+                                Completed
+                            </label>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-self: flex-end;">
+                        <button class="btn-cancel" onclick="closeDateFilter()">Cancel</button>
+                        <button class="btn-apply" onclick="applyDateFilter()">Apply Filter</button>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end;">
+                   
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
 </main>
 </body>
