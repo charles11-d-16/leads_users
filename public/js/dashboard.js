@@ -5,6 +5,31 @@ let startDate = null;
 let endDate = null;
 let selectedStatuses = ['New', 'Contacted', 'In Progress', 'Cancelled', 'Completed-Successful', 'Completed-Unsuccessful'];
 
+function showModalMessage(text, reload = false) {
+    const modal = document.getElementById('messageModal');
+    const messageText = document.getElementById('messageText');
+    const closeBtn = document.getElementById('closeMessageModal');
+    const okBtn = document.getElementById('okMessageButton');
+
+    messageText.textContent = text;
+    modal.style.display = 'block';
+
+    closeBtn.onclick = () => {
+        modal.style.display = 'none';
+        if (reload) location.reload();
+    };
+    okBtn.onclick = () => {
+        modal.style.display = 'none';
+        if (reload) location.reload();
+    };
+    window.onclick = (event) => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+            if (reload) location.reload();
+        }
+    };
+}
+
 function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('open');
 }
@@ -272,6 +297,15 @@ function populateTable(data = filteredData) {
     });
 }
 
+function setupSearchListener() {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            applyFilterInternal();
+        });
+    }
+}
+
 function applyFilterInternal() {
     const searchQuery = document.getElementById('searchInput').value.toLowerCase();
     
@@ -439,7 +473,7 @@ function selectDate(pickerId, dateStr) {
 
 function applyDateFilter() {
     if (!startDate || !endDate) {
-        alert('Please select both start and end dates');
+        showModalMessage('Please select both start and end dates');
         return;
     }
     
@@ -496,5 +530,386 @@ function handleStatusChange() {
         selectedStatuses.push('Completed-Unsuccessful');
     }
 }
+
+let importedData = [];
+let currentPage = 1;
+const rowsPerPage = 10;
+
+function openImportModal() {
+    // Show import choice modal first
+    document.getElementById('importChoiceModal').style.display = 'block';
+}
+
+function closeImportChoice() {
+    document.getElementById('importChoiceModal').style.display = 'none';
+}
+
+function chooseSingleImport() {
+    closeImportChoice();
+    document.getElementById('singleImportModal').style.display = 'block';
+    document.getElementById('singleImportForm').reset();
+}
+
+function closeSingleImport() {
+    document.getElementById('singleImportModal').style.display = 'none';
+    document.getElementById('singleImportForm').reset();
+}
+
+function chooseBulkImport() {
+    closeImportChoice();
+    // Open the bulk import modal
+    document.getElementById('importModal').style.display = 'block';
+    document.getElementById('importStep1').style.display = 'block';
+    document.getElementById('importStep2').style.display = 'none';
+    importedData = [];
+    
+    // Attach browse button listener
+    const browseBtn = document.getElementById('browseBtn');
+    if (browseBtn) {
+        browseBtn.onclick = function() {
+            document.getElementById('importFile').click();
+        };
+    }
+}
+
+function closeImportModal() {
+    document.getElementById('importModal').style.display = 'none';
+    resetImport();
+}
+
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) {
+        console.log('No file selected');
+        return;
+    }
+
+    console.log('File selected:', file.name, 'Size:', file.size, 'Type:', file.type);
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            console.log('File read successfully, size:', e.target.result.byteLength);
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+            console.log('Parsed Excel data rows:', jsonData.length);
+            console.log('First row:', jsonData[0]);
+            console.log('Headers:', Object.keys(jsonData[0] || {}));
+
+            // Validate and process data
+            if (jsonData.length === 0) {
+                showModalMessage('No data found in the file');
+                return;
+            }
+
+            // Get the actual headers from the file
+            const actualHeaders = Object.keys(jsonData[0] || {});
+            const normalizeHeader = (h) => h.toLowerCase().trim().replace(/\s+/g, ' ');
+            
+            const actualNormalized = actualHeaders.map(normalizeHeader);
+            
+            console.log('Actual headers found:', actualHeaders);
+            console.log('Normalized headers:', actualNormalized);
+            
+            // Check if we have at least the minimum required columns
+            const hasFullName = actualNormalized.some(h => h.includes('full') && h.includes('name'));
+            const hasEmail = actualNormalized.some(h => h.includes('email'));
+            const hasInquiry = actualNormalized.some(h => h.includes('inquiry') || h.includes('concern'));
+            const hasDiscovered = actualNormalized.some(h => h.includes('discover') || h.includes('via') || h.includes('platform'));
+            
+            console.log('Column checks:');
+            console.log('  Full Name:', hasFullName, '- Looking for columns with "full" and "name"');
+            console.log('  Email:', hasEmail, '- Looking for columns with "email"');
+            console.log('  Inquiry:', hasInquiry, '- Looking for columns with "inquiry" or "concern"');
+            console.log('  Discovered:', hasDiscovered, '- Looking for columns with "discover" or "via" or "platform"');
+            
+            if (!hasFullName || !hasEmail || !hasInquiry || !hasDiscovered) {
+                const missing = [];
+                if (!hasFullName) missing.push('Full Name');
+                if (!hasEmail) missing.push('Email Address');
+                if (!hasInquiry) missing.push('Inquiry');
+                if (!hasDiscovered) missing.push('Discovered Via');
+                
+                showModalMessage('Invalid file format!\n\n❌ Missing required columns: ' + missing.join(', ') +
+                      '\n\n✓ Required columns:\n' +
+                      '  • Full Name\n' +
+                      '  • Email Address\n' +
+                      '  • Inquiry\n' +
+                      '  • Discovered Via\n\n' +
+                      '📋 Your file has: ' + actualHeaders.join(', '));
+                document.getElementById('importFile').value = '';
+                return;
+            }
+
+            // Map data with flexible column name matching
+            importedData = jsonData.map(row => {
+                // Find matching columns with better matching logic
+                const findValue = (headers, searchTerms) => {
+                    const terms = Array.isArray(searchTerms) ? searchTerms : [searchTerms];
+                    
+                    // First try exact match (case-insensitive)
+                    for (const header of headers) {
+                        const normalized = header.toLowerCase().trim();
+                        for (const term of terms) {
+                            if (normalized === term.toLowerCase()) {
+                                return row[header] || '';
+                            }
+                        }
+                    }
+                    
+                    // Then try partial match
+                    for (const header of headers) {
+                        const normalized = header.toLowerCase().trim();
+                        for (const term of terms) {
+                            if (normalized.includes(term.toLowerCase())) {
+                                return row[header] || '';
+                            }
+                        }
+                    }
+                    return '';
+                };
+
+                const mappedRow = {
+                    full_name: findValue(actualHeaders, ['full name', 'fullname', 'name']) || '',
+                    email: findValue(actualHeaders, ['email', 'email address']) || '',
+                    phone: findValue(actualHeaders, ['phone', 'phone number', 'mobile']) || '',
+                    company: findValue(actualHeaders, ['company', 'organization', 'business']) || '',
+                    address: findValue(actualHeaders, ['address', 'location', 'street', 'city']) || '',
+                    message: '', // Message will be empty, can be filled manually
+                    concern_type: findValue(actualHeaders, ['inquiry', 'concern', 'type', 'subject']) || 'General Inquiry',
+                    discovery_platform: findValue(actualHeaders, ['discovered', 'discover', 'via', 'platform', 'source']) || 'Other'
+                };
+                
+                // Debug log to show mapping
+                console.log('Row mapping:', {
+                    headers: actualHeaders,
+                    email_value: mappedRow.email,
+                    address_value: mappedRow.address
+                });
+                
+                return mappedRow;
+            }).filter(item => item.full_name.trim() !== '' || item.email.trim() !== '');
+
+            console.log('Processed import data:', importedData);
+            console.log('Valid records count:', importedData.length);
+
+            if (importedData.length === 0) {
+                showModalMessage('No valid data found. Please ensure at least Full Name or Email Address is filled.');
+                document.getElementById('importFile').value = '';
+                return;
+            }
+
+            showModalMessage(`Found ${importedData.length} valid records to import!`);
+            showImportPreview();
+        } catch (error) {
+            console.error('File upload error:', error);
+            showModalMessage('Error reading file: ' + error.message);
+            document.getElementById('importFile').value = '';
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function showImportPreview() {
+    const previewDiv = document.getElementById('importPreview');
+    previewDiv.innerHTML = '';
+    
+    currentPage = 1;
+
+    if (importedData.length === 0) {
+        previewDiv.innerHTML = '<p style="color: var(--muted);">No data to preview</p>';
+        document.getElementById('importPagination').style.display = 'none';
+        return;
+    }
+
+    renderPreviewPage();
+    document.getElementById('importStep1').style.display = 'none';
+    document.getElementById('importStep2').style.display = 'block';
+}
+
+function renderPreviewPage() {
+    const previewDiv = document.getElementById('importPreview');
+    previewDiv.innerHTML = '';
+
+    const startIdx = (currentPage - 1) * rowsPerPage;
+    const endIdx = startIdx + rowsPerPage;
+    const pageData = importedData.slice(startIdx, endIdx);
+    
+    const totalPages = Math.ceil(importedData.length / rowsPerPage);
+
+    // Create a table preview with all columns
+    let table = '<table>';
+    table += '<thead><tr>';
+    table += '<th>Name</th>';
+    table += '<th>Email</th>';
+    table += '<th>Phone</th>';
+    table += '<th>Company</th>';
+    table += '<th>Address</th>';
+    table += '<th>Discovered Via</th>';
+    table += '<th>Inquiry</th>';
+    table += '</tr></thead>';
+    table += '<tbody>';
+    
+    pageData.forEach(row => {
+        table += `<tr>
+            <td style="font-weight: 500;">${row.full_name || '-'}</td>
+            <td style="color: var(--muted);">${row.email || '-'}</td>
+            <td>${row.phone || '-'}</td>
+            <td>${row.company || '-'}</td>
+            <td>${row.address || '-'}</td>
+            <td>${row.discovery_platform || '-'}</td>
+            <td>${row.concern_type || '-'}</td>
+        </tr>`;
+    });
+    
+    table += '</tbody></table>';
+    previewDiv.innerHTML = table;
+    
+    // Update pagination
+    const paginationDiv = document.getElementById('importPagination');
+    const prevBtn = document.getElementById('prevPageBtn');
+    const nextBtn = document.getElementById('nextPageBtn');
+    const currentPageSpan = document.getElementById('currentPage');
+    const totalPagesSpan = document.getElementById('totalPages');
+    
+    currentPageSpan.textContent = currentPage;
+    totalPagesSpan.textContent = totalPages;
+    
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages;
+    
+    if (importedData.length > rowsPerPage) {
+        paginationDiv.style.display = 'flex';
+    } else {
+        paginationDiv.style.display = 'none';
+    }
+}
+
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        renderPreviewPage();
+    }
+}
+
+function nextPage() {
+    const totalPages = Math.ceil(importedData.length / rowsPerPage);
+    if (currentPage < totalPages) {
+        currentPage++;
+        renderPreviewPage();
+    }
+}
+
+function resetImport() {
+    document.getElementById('importFile').value = '';
+    importedData = [];
+    currentPage = 1;
+    document.getElementById('importStep1').style.display = 'block';
+    document.getElementById('importStep2').style.display = 'none';
+    document.getElementById('importPreview').innerHTML = '';
+    document.getElementById('importPagination').style.display = 'none';
+}
+
+async function submitImport() {
+    if (importedData.length === 0) {
+        showModalMessage('No data to import');
+        return;
+    }
+
+    console.log('Submitting import with data:', importedData);
+
+    try {
+        const response = await fetch('/api/inquiries/bulk', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ inquiries: importedData })
+        });
+
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+
+        if (!response.ok) {
+            const error = await response.json();
+            console.error('Server error:', error);
+            throw new Error(error.error || 'Failed to import inquiries');
+        }
+
+        const result = await response.json();
+        console.log('Import result:', result);
+        showModalMessage(`Successfully imported ${result.imported} inquiries!`, true);
+        closeImportModal();
+    } catch (error) {
+        console.error('Import error:', error);
+        showModalMessage('Error: ' + error.message);
+    }
+}
+
+// Single Import Form Handler
+document.addEventListener('DOMContentLoaded', function() {
+    const singleImportForm = document.getElementById('singleImportForm');
+    if (singleImportForm) {
+        singleImportForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const inquiry = {
+                full_name: document.getElementById('singleFullName').value.trim(),
+                email: document.getElementById('singleEmail').value.trim(),
+                phone: document.getElementById('singlePhone').value.trim(),
+                company: document.getElementById('singleCompany').value.trim(),
+                address: document.getElementById('singleAddress').value.trim(),
+                message: 'Added via single import',
+                concern_type: document.getElementById('singleInquiryType').value,
+                discovery_platform: document.getElementById('singleDiscoveredVia').value
+            };
+
+            // Validate required fields
+            if (!inquiry.full_name || !inquiry.email || !inquiry.concern_type || !inquiry.discovery_platform) {
+                showModalMessage('Please fill in all required fields (Full Name, Email, Discovered Via, and Inquiry Type)');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/inquiries/bulk', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ inquiries: [inquiry] })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to add inquiry');
+                }
+
+                const result = await response.json();
+                showModalMessage('Inquiry added successfully!', true);
+                closeSingleImport();
+            } catch (error) {
+                console.error('Error adding inquiry:', error);
+                showModalMessage('Error: ' + error.message);
+            }
+        });
+    }
+});
+
+// Close modals when clicking outside
+window.addEventListener('click', function(event) {
+    const importModal = document.getElementById('importModal');
+    const importChoiceModal = document.getElementById('importChoiceModal');
+    const singleImportModal = document.getElementById('singleImportModal');
+    
+    if (event.target == importModal) {
+        closeImportModal();
+    }
+    if (event.target == importChoiceModal) {
+        closeImportChoice();
+    }
+    if (event.target == singleImportModal) {
+        closeSingleImport();
+    }
+});
 
 window.onload = fetchInquiries;

@@ -81,3 +81,79 @@ exports.updateInquiryStatus = async (req, res) => {
     res.status(500).json({ error: "Failed to update status" });
   }
 };
+
+exports.updateInquiry = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { full_name, email, phone, company, address, message } = req.body;
+
+    // Validate required fields
+    if (!full_name || !email || !message) {
+      return res.status(400).json({ error: "Full name, email, and message are required" });
+    }
+
+    // Update the inquiry
+    const inquiry = await Inquiry.findOneAndUpdate(
+      { inquiry_id: id },
+      { 
+        full_name,
+        email,
+        phone: phone || undefined,
+        company: company || undefined,
+        address: address || undefined,
+        message
+      },
+      { new: true }
+    );
+
+    if (!inquiry) {
+      return res.status(404).json({ error: "Inquiry not found" });
+    }
+
+    res.json({ success: true, inquiry });
+  } catch (err) {
+    console.error("Error updating inquiry:", err);
+    res.status(500).json({ error: "Failed to update inquiry details" });
+  }
+};
+
+exports.bulkImportInquiries = async (req, res) => {
+  try {
+    const { inquiries } = req.body;
+
+    if (!inquiries || !Array.isArray(inquiries) || inquiries.length === 0) {
+      return res.status(400).json({ error: "No inquiries provided" });
+    }
+
+    // Format data - let the pre-save hook generate inquiry_id
+    const inquiriesToInsert = inquiries.map((inq) => ({
+      full_name: String(inq.full_name || '').trim() || '',
+      email: String(inq.email || '').trim() || '',
+      phone: String(inq.phone || '').trim() || '',
+      company: String(inq.company || '').trim() || '',
+      address: String(inq.address || '').trim() || '',
+      message: String(inq.message || '').trim() || '(Empty - Please fill in later)',
+      concern_type: String(inq.concern_type || '').trim() || 'General Inquiry',
+      discovery_platform: String(inq.discovery_platform || '').trim() || 'Other',
+      status: 'New',
+      inquiry_date: new Date()
+    }));
+
+    // Save each inquiry individually to trigger pre-save hooks
+    const result = [];
+    for (const inquiryData of inquiriesToInsert) {
+      const inquiry = new Inquiry(inquiryData);
+      const saved = await inquiry.save();
+      result.push(saved);
+    }
+
+    res.json({ 
+      success: true, 
+      imported: result.length, 
+      inquiries: result 
+    });
+  } catch (err) {
+    console.error("Error bulk importing inquiries:", err);
+    res.status(500).json({ error: "Failed to import inquiries: " + err.message });
+  }
+};

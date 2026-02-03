@@ -289,7 +289,12 @@
 
         .btn-action {
             background: var(--primary); color: #000; border: none; padding: 12px;
-            border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%; flex-shrink: 0;
+            border-radius: 8px; font-weight: 800; cursor: pointer; width: 47%; flex-shrink: 0;
+        }
+
+        .btn-action1 {
+            background: black; color: white; padding: 12px; border: 2px solid var(--primary);
+            border-radius: 8px; font-weight: 800; cursor: pointer; width: 47%; flex-shrink: 0;
         }
 
         .menu-toggle { display: none; }
@@ -335,8 +340,11 @@
             text-align: center;
             box-shadow: 0 0 12px rgba(21,245,186,0.3);
             animation: fadeIn 0.3s ease-in-out;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
+        
         .close {
             float: right;
             font-size: 24px;
@@ -424,4 +432,10 @@
             width: 32px;                
             height: 32px;
             object-fit: contain;
+        }
+
+        .btn-row {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
         }

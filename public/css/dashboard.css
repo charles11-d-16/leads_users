@@ -240,8 +240,15 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            
+            background: radial-gradient(circle at center, rgba(21,245,186,0.05), rgba(0,0,0,0.85));
+            backdrop-filter: blur(2px);
+            padding: 40px 20px;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+
+        .modal::-webkit-scrollbar {
+            display: none;
         }
 
         .modal.show {
@@ -255,9 +262,12 @@
             border: 1px solid var(--border);
             border-radius: 16px;
             width: 90%;
-            max-width: 700px;
+            max-width: 1100px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
             border-color: #0f766e;
+            max-height: none;
+            overflow-y: visible;
+            animation: fadeIn 0.3s ease-in-out;
         }
 
         .modal-header {
@@ -289,6 +299,121 @@
 
         .modal-body {
             padding: 20px;
+        }
+
+        /* Date Filter Modal Styles */
+        #dateFilterModal .modal-content {
+            max-width: 700px !important;
+            width: 85% !important;
+        }
+
+        /* Message Modal Styles */
+        #messageModal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(21,245,186,0.05), rgba(0,0,0,0.85));
+            backdrop-filter: blur(2px);
+        }
+
+        #messageModal .modal-content {
+            background: #000;
+            color: #fff;
+            margin: 15% auto;
+            padding: 24px;
+            border-radius: 10px;
+            border: 2px solid #43f3d0;
+            width: 80%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 0 12px rgba(21,245,186,0.3);
+            animation: fadeIn 0.3s ease-in-out;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        #messageModal .close {
+            float: right;
+            font-size: 24px;
+            cursor: pointer;
+            color: #43f3d0;
+            background: none;
+            border: none;
+            padding: 0;
+            margin: -12px -12px 0 0;
+        }
+
+        #messageModal .close:hover {
+            color: #15f5ba;
+        }
+
+        #messageModal p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #fff;
+            white-space: pre-wrap;
+            text-align: left;
+            margin: 12px 0;
+        }
+
+        .btn-ok {
+            margin-top: 20px;
+            padding: 10px 24px;
+            background: #43f3d0;
+            color: #000;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s ease;
+        }
+
+        .btn-ok:hover {
+            background: #15f5ba;
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0; transform: translateY(-20px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+
+        /* Import Choice Modal Styles */
+        #importChoiceModal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        /* Single Import Modal Styles */
+        #singleImportModal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        #singleImportModal .modal-content {
+            background: #000000;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            margin: 5% auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            border-color: #0f766e;
         }
 
         /* Date Picker Styles */
@@ -546,3 +671,305 @@
     justify-content: center;
     font-size: 12px;
 }
+
+ .modal-import-type {
+            display: flex;
+            flex-direction: column;
+            padding: 250px 600px;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(21,245,186,0.05), rgba(0,0,0,0.85));
+            backdrop-filter: blur(2px);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content-import-type {
+            background: var(--background);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid var(--primary);
+            color: var(--text);
+            max-width: 350px;
+            background-color: black;
+            text-align: center;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .modal-content-import-type h1 {
+            margin-bottom: 25px;
+            padding-left: 50px;
+        }
+        .btn-action-import-type {
+            background-color: var(--primary);
+            color: var(--button-text);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            color: black;
+            flex: 1; padding: 12px 20px; font-size: 13px;
+            font-weight: 800;
+
+        }
+
+        .btn-action-import-type1 {
+            background-color: black;
+            color: var(--button-text);
+            border: none;
+            border-radius: 8px;
+            border: 2px solid var(--primary);
+            cursor: pointer;
+            transition: background-color 0.3s;
+            color: white;
+            flex: 1; padding: 12px 20px; font-size: 13px;
+            font-weight: 800;
+
+        }
+
+        /* Import Step 2 Styles */
+        .import-step2 {
+            padding: 20px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .import-step2-content {
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .import-step2-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .import-preview-container {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0;
+            font-size: 12px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            width: 100%;
+            max-height: fit-content;
+        }
+
+        .import-preview-container::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .import-preview-container::-webkit-scrollbar-track {
+            background: var(--input-bg);
+            border-radius: 10px;
+        }
+
+        .import-preview-container::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        .import-preview-container::-webkit-scrollbar-thumb:hover {
+            background: var(--primary2);
+        }
+
+        .import-preview-container {
+            scrollbar-color: var(--primary) var(--input-bg);
+            scrollbar-width: thin;
+        }
+
+        .import-preview-container table {
+            width: 150%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            min-width: 100%;
+        }
+
+        .import-preview-container thead {
+            position: sticky;
+            top: 0;
+            background: var(--card-bg);
+            z-index: 10;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .import-preview-container thead th {
+            padding: 12px 15px;
+            text-align: left;
+            color: var(--primary);
+            font-weight: 600;
+            background: var(--card-bg);
+            white-space: nowrap;
+        }
+
+        .import-preview-container tbody {
+            display: table-row-group;
+        }
+
+        .import-preview-container thead tr {
+            display: table-row;
+        }
+
+        .import-preview-container tbody tr {
+            border-bottom: 1px solid var(--border);
+            display: table-row;
+            height: 40px;
+        }
+
+        .import-preview-container tbody td {
+            padding: 12px 15px;
+            font-size: 11px;
+            display: table-cell;
+            word-break: break-word;
+        }
+
+        .import-preview-container thead th {
+            display: table-cell;
+            min-width: 100px;
+        }
+
+        .import-preview-container tbody tr:hover {
+            background: rgba(67, 243, 208, 0.05);
+        }
+
+        .import-pagination {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            padding: 12px 15px;
+            border-top: 1px solid var(--border);
+            background: var(--input-bg);
+        }
+
+        .import-pagination button {
+            background: var(--card-bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .import-pagination button:hover:not(:disabled) {
+            background: var(--primary);
+            color: var(--bg);
+            border-color: var(--primary);
+        }
+
+        .import-pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .import-pagination-info {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .import-step2-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        /* Single Import Modal Styles */
+        .single-import-modal-content {
+            max-width: 500px !important;
+            padding: 15px;
+            border: 2px solid var(--primary) !important;
+        }
+
+        .single-import-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .single-import-header h3 {
+            margin: 0;
+            color: var(--primary);
+        }
+
+        .single-import-form {
+            width: 100%;
+        }
+
+        .single-import-form-group {
+            margin-bottom: 15px;
+        }
+
+        .single-import-label {
+            display: block;
+            margin-bottom: 3px;
+            font-weight: 500;
+            font-size: 13px;
+            color: white;
+        }
+
+        .single-import-input,
+        .single-import-select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #43f3d0;
+            background: #111;
+            color: #fff;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+        }
+
+        .single-import-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .single-import-actions .btn-action-import-type {
+            background-color: var(--primary);
+            color: black;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            flex: 1;
+            padding: 12px 20px;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .single-import-actions .btn-action-import-type:hover {
+            opacity: 0.9;
+        }
+
+        .single-import-actions .btn-action-import-type1 {
+            background-color: black;
+            color: white;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            flex: 1;
+            padding: 12px 20px;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .single-import-header h3 {
+            color: white;
+            margin-left: 20px;
+        }
+
+
