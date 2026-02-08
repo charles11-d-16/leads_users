@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="css/dashboard.css">
     <script src="js/dashboard.js" defer></script>
 </head>
@@ -19,7 +20,7 @@
     </div>
     
     <div class="nav-group">
-        <span class="nav-label">Admin</span>
+        <span class="nav-label">Superadmin</span>
         <a href="dashboard2.html" class="nav-item"><i class="bi bi-grid"></i> Dashboard</a>
     </div>
 
@@ -56,7 +57,8 @@
             </div>
             <button class="btn-icon" onclick="toggleTheme()" title="Toggle Theme" id="themeBtn"><i class="bi bi-moon-stars"></i></button>
             <button class="btn-icon" onclick="openDateFilter()" title="Filter"><i class="bi bi-funnel"></i></button>
-            <button class="btn-icon" title="Export"><i class="bi bi-box-arrow-up"></i></button>
+            <button class="btn-icon" onclick="exportTableToExcel()" title="Export"><i class="bi bi-box-arrow-up"></i></button>
+            <button class="btn-icon" onclick="openImportModal()" title="Import"><i class="bi bi-box-arrow-down"></i></button>
         </div>
     </div>
 <div class="scrollable">
@@ -190,7 +192,126 @@
             </div>
         </div>
     </div>
+    
+    <!-- Import Modal -->
+    <div id="importModal" class="modal" style="padding-left: 470px;" >
+        <div class="modal-content" style="max-width: 600px; border: 2px solid var(--primary); margin-top: 200px; margin-bottom: 200px;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; color: white;">Import Inquiries</h3>
+                <button class="modal-close" onclick="closeImportModal()" style="background: none; border: none; color: var(--primary); font-size: 24px; cursor: pointer;">&times;</button>
+            </div>
+            
+            <div id="importStep1" style="display: block;">
+                <div style="text-align: center; padding: 20px;">
+                    <i class="bi bi-file-earmark-spreadsheet" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px; display: block;"></i>
+                    <p style="color: var(--muted); margin-bottom: 20px;">Upload an Excel or CSV file with inquiry data</p>
+                    <input type="file" id="importFile" accept=".xlsx,.xls,.csv" style="display: none; width: 0; height: 0;" onchange="handleFileUpload(event)">
+                    <button type="button" class="btn-action"  id="browseBtn" style="padding: 12px 24px; color:white; font-size: 14px; cursor: pointer; border-radius: 10px; background-color: black; border: 2px solid var(--primary);">Browse Files</button>
+                </div>
+            </div>
+         
+            <div id="importStep2" class="import-step2">
+                <div class="import-step2-content">
+                    <label class="import-step2-label">Preview Data</label>
+                    <div id="importPreview" class="import-preview-container">
+                        <!-- Preview will be inserted here -->
+                    </div>
+                    <div id="importPagination" class="import-pagination" style="display: none;">
+                        <button id="prevPageBtn" onclick="previousPage()" disabled>← Previous</button>
+                        <span class="import-pagination-info">
+                            Page <span id="currentPage">1</span> of <span id="totalPages">1</span>
+                        </span>
+                        <button id="nextPageBtn" onclick="nextPage()" disabled>Next →</button>
+                    </div>
+                </div>
+                <div class="import-step2-actions">
+                    <button class="btn-action-import-type" onclick="resetImport()" >Cancel</button>
+                    <button class="btn-action-import-type1" onclick="submitImport()" >Add</button>
+                </div>
+            </div>
+      </div>
     </div>
+
+    <!-- Import Type Choice Modal -->
+    <div id="importChoiceModal" class="modal-import-type">
+        <div class="modal-content-import-type"  >
+            <h2>Import Type</h2>
+            <div style="display: flex; gap: 15px;">
+                <button class="btn-action-import-type" onclick="chooseSingleImport()">Single Import</button>
+                <button class="btn-action-import-type1" onclick="chooseBulkImport()">Bulk Import</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Single Import Modal -->
+    <div id="singleImportModal" class="modal">
+        <div class="modal-content single-import-modal-content">
+            <div class="single-import-header">
+                <h3>Add Single Inquiry</h3>
+                <button class="modal-close" onclick="closeSingleImport()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="singleImportForm" class="single-import-form">
+                    <div class="single-import-form-group">
+                        <label class="single-import-label">Full Name *</label>
+                        <input type="text" id="singleFullName" name="full_name" required class="single-import-input">
+                    </div>
+                    <div class="single-import-form-group">
+                        <label class="single-import-label">Email Address *</label>
+                        <input type="email" id="singleEmail" name="email" required class="single-import-input">
+                    </div>
+                    <div class="single-import-form-group">
+                        <label class="single-import-label">Phone</label>
+                        <input type="text" id="singlePhone" name="phone" class="single-import-input">
+                    </div>
+                    <div class="single-import-form-group">
+                        <label class="single-import-label">Company</label>
+                        <input type="text" id="singleCompany" name="company" class="single-import-input">
+                    </div>
+                    <div class="single-import-form-group">
+                        <label class="single-import-label">Address</label>
+                        <input type="text" id="singleAddress" name="address" class="single-import-input">
+                    </div>
+                    <div class="single-import-form-group">
+                        <label class="single-import-label">Discovered Via *</label>
+                        <select id="singleDiscoveredVia" name="discovery_platform" required class="single-import-select">
+                            <option value="">Select an option</option>
+                            <option value="facebook">Facebook</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="linkedIn">LinkedIn</option>
+                            <option value="referral">Referral</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="single-import-form-group">
+                        <label class="single-import-label">Inquiry/Concern Type *</label>
+                        <select id="singleInquiryType" name="concern_type" required class="single-import-select">
+                            <option value="">Select an option</option>
+                            <option value="proposal">Project Proposal</option>
+                            <option value="maintenance">Maintenance Support</option>
+                            <option value="security">Security Consultation</option>
+                            <option value="general">General Inquiry</option>
+                        </select>
+                    </div>
+                    <div class="single-import-actions">
+                        <button type="button" class="btn-action-import-type" onclick="closeSingleImport()">Cancel</button>
+                        <button type="submit" class="btn-action-import-type1">Add Inquiry</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 </main>
+
+<!-- Message Modal Alert -->
+<div id="messageModal" class="modal">
+  <div class="modal-content">
+    <span class="close" id="closeMessageModal">&times;</span>
+    <p id="messageText"></p>
+    <button id="okMessageButton" class="btn-ok">OK</button>
+  </div>
+</div>
+
 </body>
 </html>

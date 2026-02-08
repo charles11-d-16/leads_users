@@ -23,4 +23,6 @@ router.post("/:id/reset-password", userController.resetPassword);
 // DELETE user
 router.delete("/:id", userController.deleteOne);
 
+router.get('/audit/logins', userController.getLoginHistory);
+
 module.exports = router;

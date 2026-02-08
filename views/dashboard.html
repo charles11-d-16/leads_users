@@ -10,6 +10,8 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="css/dashboard.css">
     <script src="js/dashboard.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body data-theme="dark">
 
@@ -59,7 +61,7 @@
             </div>
             <button class="btn-icon" onclick="toggleTheme()" title="Toggle Theme" id="themeBtn"><i class="bi bi-moon-stars"></i></button>
             <button class="btn-icon" onclick="openDateFilter()" title="Filter"><i class="bi bi-funnel"></i></button>
-            <button class="btn-icon" title="Export"><i class="bi bi-box-arrow-up"></i></button>
+            <button class="btn-icon" onclick="openExportModal()" title="Export"><i class="bi bi-box-arrow-up"></i></button>
             <button class="btn-icon" onclick="openImportModal()" title="Import"><i class="bi bi-box-arrow-down"></i></button>
         </div>
     </div>
@@ -233,6 +235,17 @@
             </div>
       </div>
     </div>
+
+    <div id="exportChoiceModal" class="modal-import-type">
+    <div class="modal-content-import-type">
+        <h2>Export Type</h2>
+        <div style="display: flex; gap: 15px;">
+            <button class="btn-action-import-type" onclick="exportTableToExcel(); closeExportModal();">CSVFormat</button>
+            
+            <button class="btn-action-import-type1" onclick="exportPDF(); closeExportModal();">PDFFormat</button>
+        </div>
+    </div>
+</div>
 
     <!-- Import Type Choice Modal -->
     <div id="importChoiceModal" class="modal-import-type">

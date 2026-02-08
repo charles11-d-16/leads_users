@@ -56,42 +56,96 @@
 
     <div class="table-card">
         <div class="table-scroll">
-            <table>
-                <thead>
-                    <tr>
-                        <th>User</th>
-                        <th>IP Address</th>
-                        <th>Status</th>
-                        <th>Device / Browser</th>
-                        <th>Timestamp</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><b style="font-weight: 600;">Admin_Ray</b></td>
-                        <td class="ip-text">112.204.15.82</td>
-                        <td><span class="status-pill status-success"><i class="bi bi-check-circle"></i> Success</span></td>
-                        <td><span class="browser-info">Chrome / Windows 11</span></td>
-                        <td>10 mins ago</td>
-                    </tr>
-                    <tr>
-                        <td><b style="font-weight: 600;">Admin_Sarah</b></td>
-                        <td class="ip-text">124.13.45.101</td>
-                        <td><span class="status-pill status-failed"><i class="bi bi-x-circle"></i> Failed Attempt</span></td>
-                        <td><span class="browser-info">Firefox / MacOS</span></td>
-                        <td>2 hours ago</td>
-                    </tr>
-                    <tr>
-                        <td><b style="font-weight: 600;">Super_Admin</b></td>
-                        <td class="ip-text">192.168.1.1</td>
-                        <td><span class="status-pill status-success"><i class="bi bi-check-circle"></i> Success</span></td>
-                        <td><span class="browser-info">Safari / iPhone</span></td>
-                        <td>Yesterday, 09:15 AM</td>
-                    </tr>
-                </tbody>
-            </table>
+           <table>
+    <thead>
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>IP Address</th>
+            <th>Status</th>
+            <th>Timestamp</th>
+        </tr>
+    </thead>
+    <tbody id="auditTableBody">
+        <tr>
+            <td colspan="7" style="text-align: center; color: var(--muted);">Loading records...</td>
+        </tr>
+    </tbody>
+</table>
         </div>
     </div>
 </main>
+<script>
+    // ... your existing toggleSidebar functions ...
+
+    // Function to format date nicely
+    const formatDate = (dateString) => {
+        const options = { 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric',
+            hour: '2-digit', 
+            minute: '2-digit' 
+        };
+        return new Date(dateString).toLocaleDateString('en-US', options);
+    };
+
+    // Fetch and Display Login History
+   async function fetchLoginHistory() {
+    try {
+        const response = await fetch('/api/audit/logins'); 
+        const data = await response.json();
+        
+        const tbody = document.getElementById('auditTableBody');
+        tbody.innerHTML = ''; 
+
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No login history found.</td></tr>';
+            return;
+        }
+
+        data.forEach(log => {
+    // If user exists, use their name. If not (failed login), show "Unknown / [email]"
+    const firstName = log.userId ? log.userId.firstname : "Unknown";
+    const lastName = log.userId ? log.userId.lastname : "Unknown";
+    const email = log.userId ? log.userId.email : log.attemptedEmail;
+    const role = log.userId ? log.userId.role : "N/A";
+
+    const statusClass = log.status === 'Success' ? 'status-success' : 'status-failed';
+    const statusIcon = log.status === 'Success' ? 'bi-check-circle' : 'bi-x-circle';
+
+    const row = `
+        <tr>
+            <td><b style="font-weight: 600;">${firstName}</b></td>
+            <td><b style="font-weight: 600;">${lastName}</b></td>
+            <td style="color: var(--muted);">${email}</td>
+            <td>
+                <span style="background: var(--input-bg); padding: 4px 8px; border-radius: 4px; font-size: 11px;">
+                    ${role}
+                </span>
+            </td>
+            <td class="ip-text">${log.ipAddress || 'Unknown'}</td>
+            <td>
+                <span class="status-pill ${statusClass}">
+                    <i class="bi ${statusIcon}"></i> ${log.status}
+                </span>
+            </td>
+            <td style="color: var(--muted); font-size: 12px;">${formatDate(log.loginTime)}</td>
+        </tr>
+    `;
+    tbody.innerHTML += row;
+});
+
+    } catch (error) {
+        console.error('Error fetching logs:', error);
+        document.getElementById('auditTableBody').innerHTML = 
+            '<tr><td colspan="7" style="text-align: center; color: var(--danger);">Error loading data.</td></tr>';
+    }
+}
+    // Run on page load
+    document.addEventListener('DOMContentLoaded', fetchLoginHistory);
+</script>
 </body>
 </html>

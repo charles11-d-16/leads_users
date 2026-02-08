@@ -913,3 +913,157 @@ window.addEventListener('click', function(event) {
 });
 
 window.onload = fetchInquiries;
+
+
+function exportTableToExcel() {
+    // 1. Check if we have data to export
+    // We use filteredData if it exists, otherwise the raw inquiriesData
+    const dataSource = (filteredData && filteredData.length > 0) ? filteredData : inquiriesData;
+
+    if (!dataSource || dataSource.length === 0) {
+        showModalMessage("No data available to export.");
+        return;
+    }
+
+    // 2. Format the data for Excel
+    // We map the data to create nice headers (Instead of "full_name", we want "Full Name")
+    const exportData = dataSource.map(item => ({
+        "Client ID": item.inquiry_id,
+        "Full Name": item.full_name,
+        "Email": item.email,
+        "Phone": item.phone || '-',
+        "Date": new Date(item.inquiry_date).toLocaleDateString(),
+        "Status": item.status,
+        "Company": item.company || '-',
+        "Address": item.address || '-',
+        "Type": item.concern_type,
+        "Source": item.discovery_platform
+    }));
+
+    // 3. Create a new Workbook
+    const wb = XLSX.utils.book_new();
+    
+    // 4. Create a Worksheet from our formatted data
+    const ws = XLSX.utils.json_to_sheet(exportData);
+
+    // Optional: Adjust column widths for better readability
+    const wscols = [
+        {wch: 15}, // ID
+        {wch: 25}, // Name
+        {wch: 25}, // Email
+        {wch: 15}, // Phone
+        {wch: 15}, // Date
+        {wch: 15}, // Status
+        {wch: 20}, // Company
+        {wch: 30}, // Address
+        {wch: 20}, // Type
+        {wch: 15}  // Source
+    ];
+    ws['!cols'] = wscols;
+
+    // 5. Append the worksheet to the workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Inquiries_Data");
+
+    // 6. Generate filename with today's date
+    const dateStr = new Date().toISOString().split('T')[0];
+    const fileName = `Techstacks_Export_${dateStr}.xlsx`;
+
+    // 7. Save the file
+    XLSX.writeFile(wb, fileName);
+}
+
+
+function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    // 'l' for landscape is essential to fit all these columns
+    const doc = new jsPDF('l', 'mm', 'a4');
+
+    // Use your dataSource (filtered or raw) just like your Excel function
+    const dataSource = (filteredData && filteredData.length > 0) ? filteredData : inquiriesData;
+
+    if (!dataSource || dataSource.length === 0) {
+        alert("No data available to export.");
+        return;
+    }
+
+    // Map the data to match your screenshot columns
+    const body = dataSource.map(item => [
+        item.inquiry_id,
+        item.full_name,
+        item.email,
+        item.phone || '-',
+        new Date(item.inquiry_date).toLocaleDateString(),
+        item.status,
+        item.company || '-',
+        item.address || '-',
+        item.concern_type,
+        item.discovery_platform
+    ]);
+
+    const head = [[
+        "Client ID", "Full Name", "Email", "Phone", "Date", 
+        "Status", "Company", "Address", "Type", "Source"
+    ]];
+
+    doc.autoTable({
+        head: head,
+        body: body,
+        startY: 10, // Starts high since title is removed
+        theme: 'grid',
+        styles: {
+            fontSize: 7, // Smaller font to fit 10 columns
+            cellPadding: 2,
+            overflow: 'linebreak'
+        },
+        headStyles: {
+            fillColor: [67, 243, 208], // Your brand green
+            textColor: [0, 0, 0],
+            fontStyle: 'bold'
+        },
+        // Adjust specific column widths to prevent crowding
+        columnStyles: {
+            0: { cellWidth: 20 }, // ID
+            2: { cellWidth: 40 }, // Email (usually long)
+            7: { cellWidth: 40 }, // Address (usually long)
+        },
+        margin: { top: 10, left: 10, right: 10 }
+    });
+
+    const dateStr = new Date().toISOString().split('T')[0];
+    doc.save(`Techstacks_Inquiries_${dateStr}.pdf`);
+}
+
+// Utility to open/close the modal
+function openExportModal() {
+    document.getElementById('exportChoiceModal').style.display = 'flex';
+}
+
+function closeExportModal() {
+    document.getElementById('exportChoiceModal').style.display = 'none';
+}
+
+
+// Function to Open
+function openExportModal() {
+    document.getElementById('exportChoiceModal').style.display = 'flex';
+}
+
+// Function to Close
+function closeExportModal() {
+    document.getElementById('exportChoiceModal').style.display = 'none';
+}
+
+// The "Click Background to Close" Logic
+window.addEventListener('click', function(event) {
+    const exportModal = document.getElementById('exportChoiceModal');
+    const importModal = document.getElementById('importChoiceModal');
+
+    // If the user clicked the actual dark background overlay
+    if (event.target === exportModal) {
+        closeExportModal();
+    }
+    if (event.target === importModal) {
+        // Assuming you have a close function for import too
+        importModal.style.display = 'none';
+    }
+});

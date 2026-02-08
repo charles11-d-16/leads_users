@@ -1,10 +1,15 @@
 const User = require("../models/User");
-const bcrypt = require("bcryptjs"); // ✅ use only bcryptjs
+const LoginHistory = require("../models/LoginHistory"); // <--- ADD THIS
+const bcrypt = require("bcryptjs");
 
-// Login user
+// Login user with Audit Logging
 exports.login = async (req, res) => {
   try {
     const { email, password, role } = req.body;
+    
+    // Grabbing connection details
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const userAgent = req.headers['user-agent'];
 
     if (!email || !password || !role) {
       return res.status(400).json({ error: "Email, password, and role are required" });
@@ -12,32 +17,64 @@ exports.login = async (req, res) => {
 
     const user = await User.findOne({ email });
 
+    // --- CASE 1: FAIL (User not found) ---
     if (!user) {
+      await LoginHistory.create({ 
+        attemptedEmail: email, 
+        ipAddress: ip, 
+        device: userAgent, 
+        status: 'Failed' 
+      });
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
 
+    // --- CASE 2: FAIL (Wrong Password) ---
     if (!passwordMatch) {
+      await LoginHistory.create({ 
+        userId: user._id, 
+        attemptedEmail: email, 
+        ipAddress: ip, 
+        device: userAgent, 
+        status: 'Failed' 
+      });
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    // Normalize role comparison (case-insensitive)
+    // --- CASE 3: FAIL (Wrong Role) ---
     if (user.role.toLowerCase() !== role.toLowerCase()) {
+      await LoginHistory.create({ 
+        userId: user._id, 
+        attemptedEmail: email, 
+        ipAddress: ip, 
+        device: userAgent, 
+        status: 'Failed' 
+      });
       return res.status(403).json({ error: "Invalid role for this user" });
     }
 
+    // --- CASE 4: SUCCESS ---
+    await LoginHistory.create({ 
+      userId: user._id, 
+      attemptedEmail: email, 
+      ipAddress: ip, 
+      device: userAgent, 
+      status: 'Success' 
+    });
+
     res.json({
       message: "Login successful",
-      user: {
-        id: user._id,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        email: user.email,
-        role: user.role
+      user: { 
+        id: user._id, 
+        firstname: user.firstname, 
+        lastname: user.lastname, 
+        email: user.email, 
+        role: user.role 
       }
     });
   } catch (error) {
+    console.error("Login Error:", error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -190,4 +227,19 @@ exports.getUsers = async (req, res) => {
     console.error("Error in getUsers:", err);
     res.status(500).json({ error: "Failed to fetch users" });
   }
+};
+
+
+// Add this to userController.js
+exports.getLoginHistory = async (req, res) => {
+    try {
+        const history = await LoginHistory.find()
+            .populate('userId', 'firstname lastname email role') 
+            .sort({ loginTime: -1 }) 
+            .limit(100); 
+
+        res.json(history);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };
