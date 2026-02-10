@@ -23,19 +23,19 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, "views")));
 
 // MongoDB connection + seed superadmin
-// mongoose.connect(process.env.MONGO_URI)
-//   .then(async () => {
-//     console.log("MongoDB Atlas connected");
-//     await ensureSuperAdmin();   // seed superadmin once
-//   })
-//   .catch(err => console.error("MongoDB error:", err));
-
-mongoose.connect("mongodb://127.0.0.1:27017/leads")
+mongoose.connect(process.env.MONGO_URI)
   .then(async () => {
-    console.log("MongoDB localhost connected");
+    console.log("MongoDB Atlas connected");
     await ensureSuperAdmin();   // seed superadmin once
   })
   .catch(err => console.error("MongoDB error:", err));
+
+// mongoose.connect("mongodb://127.0.0.1:27017/leads")
+//   .then(async () => {
+//     console.log("MongoDB localhost connected");
+//     await ensureSuperAdmin();   // seed superadmin once
+//   })
+//   .catch(err => console.error("MongoDB error:", err));
 
 
 // API Routes
