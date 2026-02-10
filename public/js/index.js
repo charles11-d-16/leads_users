@@ -126,7 +126,8 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
         showToast('Login successful!', 'success');
         localStorage.setItem('user', JSON.stringify(data.user));
-        
+        localStorage.setItem('userRole', role);
+
         setTimeout(() => {
             window.location.href = role.toLowerCase() === 'superadmin' ? 'dashboard.html' : 'dashboard2.html';
         }, 1500);
