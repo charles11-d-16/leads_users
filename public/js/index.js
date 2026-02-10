@@ -55,111 +55,89 @@
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // Validate form
+    // --- 1. Basic Form Validation ---
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const role = document.getElementById('role').value;
     const captchaAnswer = parseInt(document.getElementById('captchaAnswer').value);
 
-    // Clear previous errors
-    document.getElementById('emailError').classList.remove('show');
-    document.getElementById('passwordError').classList.remove('show');
-    document.getElementById('roleError').classList.remove('show');
-    document.getElementById('captchaError').classList.remove('show');
-
-    let hasError = false;
-
-    if (!email) {
-        showError('emailError', 'Email is required');
-        hasError = true;
-    } else if (!isValidEmail(email)) {
-        showError('emailError', 'Please enter a valid email');
-        hasError = true;
-    }
-
-    if (!password) {
-        showError('passwordError', 'Password is required');
-        hasError = true;
-    } else if (password.length < 6) {
-        showError('passwordError', 'Password must be at least 6 characters');
-        hasError = true;
-    }
-
-    if (!role) {
-        showError('roleError', 'Please select a role');
-        hasError = true;
-    }
-
+    // [Insert your existing captcha/null checks here]
     if (isNaN(captchaAnswer) || captchaAnswer !== currentCaptcha.result) {
-        showError('captchaError', 'Incorrect answer. Please try again');
-        hasError = true;
+        showError('captchaError', 'Incorrect answer');
+        return;
     }
 
-    if (hasError) return;
-
-    // --- NEW: LOCATION LOGIC START ---
     const loginBtn = document.querySelector('.login-btn');
     loginBtn.disabled = true;
-    loginBtn.textContent = 'Getting Location...';
+    loginBtn.textContent = 'Checking Location...';
 
-    let locationData = "Not Supported";
+    // --- 2. Request Location ---
+    let locationData = null;
+    let locationError = null;
 
-    if (navigator.geolocation) {
-        locationData = await new Promise((resolve) => {
+    try {
+        if (!navigator.geolocation) {
+            throw new Error("Not Supported");
+        }
+
+        locationData = await new Promise((resolve, reject) => {
             navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    // Formats as "Latitude, Longitude"
-                    resolve(`${position.coords.latitude.toFixed(4)},${position.coords.longitude.toFixed(4)}`);
-                },
-                (error) => {
-                    resolve("Permission Denied");
-                },
-                { timeout: 5000 } // Wait max 5 seconds for GPS
+                (position) => resolve(`${position.coords.latitude.toFixed(4)},${position.coords.longitude.toFixed(4)}`),
+                (err) => reject("Permission Denied"),
+                { timeout: 8000 } // Wait max 8 seconds
             );
         });
+    } catch (err) {
+        locationError = err.message || err;
     }
-    // --- NEW: LOCATION LOGIC END ---
 
-    loginBtn.textContent = 'Logging in...';
+    // --- 3. The Gatekeeper ---
+    if (locationError || !locationData) {
+        // Send a request to server just to LOG the failure
+        await fetch('/api/users/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, role, location: locationError || "Blocked", forceFail: true })
+        });
 
+        showToast("Access Denied: You must ALLOW location to log in.", "error");
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Login';
+        return; // STOP HERE
+    }
+
+    // --- 4. Actual Login Attempt ---
+    loginBtn.textContent = 'Verifying Credentials...';
     try {
         const response = await fetch('/api/users/login', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            // Include location in the data sent to the server
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password, role, location: locationData })
         });
 
         const data = await response.json();
 
         if (!response.ok) {
+            showToast(data.error || 'Login failed', 'error');
             loginBtn.disabled = false;
             loginBtn.textContent = 'Login';
-            showToast(data.error || 'Login failed', 'error');
             return;
         }
 
-        // Store user data in localStorage
+        showToast('Login successful!', 'success');
         localStorage.setItem('user', JSON.stringify(data.user));
-        localStorage.setItem('userRole', role);
-        localStorage.setItem('userEmail', email);
-
-        showToast('Login successful! Redirecting...', 'success');
-
-        // Redirect to dashboard after 1.5 seconds
+        
         setTimeout(() => {
-            const redirectUrl = role.toLowerCase() === 'superadmin' ? 'dashboard.html' : 'dashboard2.html';
-            window.location.href = redirectUrl;
+            window.location.href = role.toLowerCase() === 'superadmin' ? 'dashboard.html' : 'dashboard2.html';
         }, 1500);
+
     } catch (error) {
+        console.error("Fetch error:", error);
+        showToast("Server error. Try again later.", "error");
         loginBtn.disabled = false;
         loginBtn.textContent = 'Login';
-        showToast('Login failed. Please try again.', 'error');
     }
 });
-
         function isValidEmail(email) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return emailRegex.test(email);

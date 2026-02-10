@@ -6,18 +6,30 @@ const bcrypt = require("bcryptjs");
 // Login user with Audit Logging
 exports.login = async (req, res) => {
   try {
-    // 1. Extract 'location' from req.body along with other fields
-    const { email, password, role, location } = req.body; 
-    
-    // Grabbing connection details
+    const { email, password, role, location, forceFail } = req.body;
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     const userAgent = req.headers['user-agent'];
 
-    if (!email || !password || !role) {
-      return res.status(400).json({ error: "Email, password, and role are required" });
+    // 1. Find the user FIRST so we have the ID for the audit log
+    const user = await User.findOne({ email });
+
+    // 2. Handle the "Location Denied" case (forceFail)
+    if (forceFail === true) {
+      await LoginHistory.create({ 
+        userId: user ? user._id : null, // Now 'user' is defined!
+        attemptedEmail: email,
+        ipAddress: ip,
+        device: userAgent,
+        location: location || "Permission Denied",
+        status: 'Failed' 
+      });
+      return res.status(403).json({ error: "Location permission required to login." });
     }
 
-    const user = await User.findOne({ email });
+    // 3. Continue with regular login checks
+    if (!email || !password || !role) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
 
     // --- CASE 1: FAIL (User not found) ---
     if (!user) {
@@ -25,7 +37,7 @@ exports.login = async (req, res) => {
         attemptedEmail: email, 
         ipAddress: ip, 
         device: userAgent, 
-        location: location || "Not Provided", // ADDED
+        location: location,
         status: 'Failed' 
       });
       return res.status(401).json({ error: "Invalid email or password" });
@@ -33,30 +45,17 @@ exports.login = async (req, res) => {
 
     const passwordMatch = await bcrypt.compare(password, user.password);
 
-    // --- CASE 2: FAIL (Wrong Password) ---
-    if (!passwordMatch) {
+    // --- CASE 2 & 3: FAIL (Wrong Password or Role) ---
+    if (!passwordMatch || user.role.toLowerCase() !== role.toLowerCase()) {
       await LoginHistory.create({ 
         userId: user._id, 
         attemptedEmail: email, 
         ipAddress: ip, 
         device: userAgent, 
-        location: location || "Not Provided", // ADDED
+        location: location,
         status: 'Failed' 
       });
-      return res.status(401).json({ error: "Invalid email or password" });
-    }
-
-    // --- CASE 3: FAIL (Wrong Role) ---
-    if (user.role.toLowerCase() !== role.toLowerCase()) {
-      await LoginHistory.create({ 
-        userId: user._id, 
-        attemptedEmail: email, 
-        ipAddress: ip, 
-        device: userAgent, 
-        location: location || "Not Provided", // ADDED
-        status: 'Failed' 
-      });
-      return res.status(403).json({ error: "Invalid role for this user" });
+      return res.status(401).json({ error: "Invalid email, password, or role" });
     }
 
     // --- CASE 4: SUCCESS ---
@@ -65,7 +64,7 @@ exports.login = async (req, res) => {
       attemptedEmail: email, 
       ipAddress: ip, 
       device: userAgent, 
-      location: location || "Not Provided", // ADDED
+      location: location,
       status: 'Success' 
     });
 
