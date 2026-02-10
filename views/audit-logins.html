@@ -64,6 +64,7 @@
             <th>Email</th>
             <th>Role</th>
             <th>IP Address</th>
+            <th>Location</th>
             <th>Status</th>
             <th>Timestamp</th>
         </tr>
@@ -116,25 +117,39 @@
     const statusClass = log.status === 'Success' ? 'status-success' : 'status-failed';
     const statusIcon = log.status === 'Success' ? 'bi-check-circle' : 'bi-x-circle';
 
-    const row = `
-        <tr>
-            <td><b style="font-weight: 600;">${firstName}</b></td>
-            <td><b style="font-weight: 600;">${lastName}</b></td>
-            <td style="color: var(--muted);">${email}</td>
-            <td>
-                <span style="background: var(--input-bg); padding: 4px 8px; border-radius: 4px; font-size: 11px;">
-                    ${role}
-                </span>
-            </td>
-            <td class="ip-text">${log.ipAddress || 'Unknown'}</td>
-            <td>
-                <span class="status-pill ${statusClass}">
-                    <i class="bi ${statusIcon}"></i> ${log.status}
-                </span>
-            </td>
-            <td style="color: var(--muted); font-size: 12px;">${formatDate(log.loginTime)}</td>
-        </tr>
-    `;
+    // Inside the loop where you define 'row'
+const locationStr = log.location || 'N/A';
+const googleMapsLink = log.location && log.location !== 'Location Blocked' && log.location !== 'Permission Denied'
+    ? `https://www.google.com/maps?q=${log.location}`
+    : null;
+
+const row = `
+    <tr>
+        <td><b style="font-weight: 600;">${firstName}</b></td>
+        <td><b style="font-weight: 600;">${lastName}</b></td>
+        <td style="color: var(--muted);">${email}</td>
+        <td>
+            <span style="background: var(--input-bg); padding: 4px 8px; border-radius: 4px; font-size: 11px;">
+                ${role}
+            </span>
+        </td>
+        <td class="ip-text">${log.ipAddress || 'Unknown'}</td>
+        <td style="text-align: center;">
+            ${googleMapsLink 
+                ? `<a href="${googleMapsLink}" target="_blank" title="${locationStr}" style="color: #00ffbf; font-size: 1.2rem;">
+                     <i class="bi bi-geo-alt-fill"></i>
+                   </a>`
+                : `<i class="bi bi-geo" style="color: var(--muted); opacity: 0.5;"></i>`
+            }
+        </td>
+        <td>
+            <span class="status-pill ${statusClass}">
+                <i class="bi ${statusIcon}"></i> ${log.status}
+            </span>
+        </td>
+        <td style="color: var(--muted); font-size: 12px;">${formatDate(log.loginTime)}</td>
+    </tr>
+`;
     tbody.innerHTML += row;
 });
 

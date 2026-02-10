@@ -3,9 +3,11 @@ const LoginHistory = require("../models/LoginHistory"); // <--- ADD THIS
 const bcrypt = require("bcryptjs");
 
 // Login user with Audit Logging
+// Login user with Audit Logging
 exports.login = async (req, res) => {
   try {
-    const { email, password, role } = req.body;
+    // 1. Extract 'location' from req.body along with other fields
+    const { email, password, role, location } = req.body; 
     
     // Grabbing connection details
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
@@ -23,6 +25,7 @@ exports.login = async (req, res) => {
         attemptedEmail: email, 
         ipAddress: ip, 
         device: userAgent, 
+        location: location || "Not Provided", // ADDED
         status: 'Failed' 
       });
       return res.status(401).json({ error: "Invalid email or password" });
@@ -37,6 +40,7 @@ exports.login = async (req, res) => {
         attemptedEmail: email, 
         ipAddress: ip, 
         device: userAgent, 
+        location: location || "Not Provided", // ADDED
         status: 'Failed' 
       });
       return res.status(401).json({ error: "Invalid email or password" });
@@ -49,6 +53,7 @@ exports.login = async (req, res) => {
         attemptedEmail: email, 
         ipAddress: ip, 
         device: userAgent, 
+        location: location || "Not Provided", // ADDED
         status: 'Failed' 
       });
       return res.status(403).json({ error: "Invalid role for this user" });
@@ -60,6 +65,7 @@ exports.login = async (req, res) => {
       attemptedEmail: email, 
       ipAddress: ip, 
       device: userAgent, 
+      location: location || "Not Provided", // ADDED
       status: 'Success' 
     });
 
